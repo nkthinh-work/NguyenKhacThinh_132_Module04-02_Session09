@@ -1,0 +1,34 @@
+stages:
+  - test
+  - build
+
+test:
+  stage: test
+  image: gradle:7.6-jdk17
+  services:
+    - name: postgres:14-alpine
+      alias: postgres
+  variables:
+    POSTGRES_DB: hr_test_db
+    POSTGRES_USER: postgres
+    POSTGRES_PASSWORD: test_password
+    SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/hr_test_db
+    SPRING_DATASOURCE_USERNAME: postgres
+    SPRING_DATASOURCE_PASSWORD: test_password
+    SPRING_JPA_HIBERNATE_DDL_AUTO: create-drop
+  before_script:
+    - chmod +x ./gradlew
+  script:
+    - ./gradlew test
+
+build:
+  stage: build
+  image: gradle:7.6-jdk17
+  before_script:
+    - chmod +x ./gradlew
+  script:
+    - ./gradlew build -x test
+  artifacts:
+    paths:
+      - build/libs/*.jar
+    expire_in: 1 day
